@@ -22,9 +22,9 @@ async def say_hello(message: Message):
 async def get_id_user_for_muted(message: Message, bot: Bot):
     mute_command_list = message.text.split(' ') 
     if message.text.split(' ')[0] == '!mute' and len(mute_command_list) >= 1: 
-        if my_list[0] != '118642329':
+        user_id = message.reply_to_message.from_user.id
+        if my_list[0] != str(user_id):
             minutes = int(mute_command_list[1])
-            user_id = message.reply_to_message.from_user.id
             name = message.reply_to_message.from_user.full_name
             until_date = datetime.now() + timedelta(minutes=minutes)
 
