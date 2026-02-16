@@ -14,14 +14,14 @@ my_list = json.loads(os.getenv("ADMIN_ID"))
 
 @router.message(CommandStart())
 async def say_hello(message: Message):
-    await message.answer("Bot is ready")
+    await message.answer("Бот для мьюта свинки, возможно будет расширяться, я имею в виду бота, а не свинью")
 
 
 
-@router.message(F.reply_to_message) 
+@router.message(F.reply_to_message)
 async def get_id_user_for_muted(message: Message, bot: Bot):
-    mute_command_list = message.text.split(' ') 
-    if message.text.split(' ')[0] == '!mute' and len(mute_command_list) >= 1: 
+    mute_command_list = message.text.split(' ')
+    if message.text.split(' ')[0] == '!mute' and len(mute_command_list) >= 1:
         user_id = message.reply_to_message.from_user.id
         if my_list[0] != str(user_id):
             minutes = int(mute_command_list[1])
@@ -29,7 +29,6 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
             until_date = datetime.now() + timedelta(minutes=minutes)
 
 
-            # используем message.bot, чтобы не зависеть от DI
             await bot.restrict_chat_member(
                 chat_id=message.chat.id,
                 user_id=user_id,
