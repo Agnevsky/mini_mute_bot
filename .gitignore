@@ -1,4 +1,16 @@
+# Python cache
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+
+# Env files
 .env
-migrations/__pycache__/
-migrations/env.py
-migrations/versions/*.py
+
+# IDE / Editor
+.vscode/
+.idea/
