@@ -1,1 +1,4 @@
 .env
+migrations/__pycache__/
+migrations/env.py
+migrations/versions/*.py
