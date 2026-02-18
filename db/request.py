@@ -61,3 +61,8 @@ async def is_registered_in_tournament(session: AsyncSession, user_id: int) -> bo
         select(Tournament).where(Tournament.players_id == user_id)
     )
     return result.scalars().first() is not None
+
+
+async def get_tournament_table(session):
+    result = await session.execute(select(Tournament))
+    return result.scalars().all()
