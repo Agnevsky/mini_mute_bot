@@ -10,18 +10,30 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 
 from state import RegisterState
-from db.request import create_tournament, add_user, get_user_by_tg_id
+from db.request import update_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
 from db.database import async_session_maker
 import keyboards as kb
 
 router = Router()
 
 load_dotenv()
-my_list = json.loads(os.getenv("ADMIN_ID"))
+admin_list = json.loads(os.getenv("ADMIN_ID"))
 
+# ---Команда показывает меню если пользователь не зарегистрирован в боте---
 @router.message(CommandStart())
 async def say_hello(message: Message):
-    await message.answer("Бот для мьюта свинки, возможно будет расширяться, я имею в виду бота, а не свинью")
+
+    tg_id = message.from_user.id
+
+    async with async_session_maker() as session:
+        user = await get_user_by_tg_id(session, tg_id)
+
+    if user:
+        # Уже зарегистрирован в боте
+        await message.answer(
+            "Меню", reply_markup=kb.in_tournament)
+    else:
+        await message.answer("Бот для мьюта свинки и проведения турниров", reply_markup=kb.keyboards)
 
 
 # ---функционал для мьюта пользователя---
@@ -30,7 +42,7 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
     mute_command_list = message.text.split(' ')
     if message.text.split(' ')[0] == '!mute' and len(mute_command_list) >= 1:
         user_id = message.reply_to_message.from_user.id
-        if my_list[0] != str(user_id):
+        if admin_list[0] != str(user_id):
             minutes = int(mute_command_list[1])
             name = message.reply_to_message.from_user.full_name
             until_date = datetime.now() + timedelta(minutes=minutes)
@@ -49,31 +61,18 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
             await message.answer(f"Ага соси приколист! ")
 
 
-# ---Команда для регистрации в боте, чтобы не запрашивать имя и прочее еще раз---
-@router.message(Command('reg'))
-async def register_on_bot(message: Message):
-    tg_id = message.from_user.id
+# ---Регистрация в боте-----------------------------------------------------------------
+@router.callback_query(F.data.startswith("register_bot"))
+async def clear_table_for_new_tournament(callback: CallbackQuery, state: FSMContext):
+    tg_id = callback.from_user.id
 
     async with async_session_maker() as session:
         user = await get_user_by_tg_id(session, tg_id)
 
-    if user:
-        # Уже зарегистрирован в боте
-        await message.answer(
-            "Вы уже зарегистрированы в боте")
-    else:
-        # Нужно зарегистрироваться в боте
-        await message.answer(
-            "Зарегистрируйтесь в боте",
-            reply_markup=kb.register_bot
-        )
-
-
-@router.callback_query(F.data.startswith("register_bot"))
-async def new_tournament(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
-    await state.set_state(RegisterState.waiting_name)
-    await callback.message.answer('Введите ваше имя')
+    if not user:
+        await callback.answer()
+        await state.set_state(RegisterState.waiting_name)
+        await callback.message.answer('Введите ваше имя')
 
 
 @router.message(RegisterState.waiting_name)
@@ -96,26 +95,54 @@ async def get_name(message: Message, state: FSMContext):
 
     await state.clear()
     await message.answer("Вы зарегистрированы ✅")
-
-# ---Регистрация в турнире----
-@router.callback_query(F.data.startswith("register_tournament"))
-async def new_tournament(callback: CallbackQuery):
-    ...
+# -----------------------------------------------------------------------------
 
 
-
-
-# --- Команда для очистки таблицы---
-@router.message(Command('new'))
-async def new_command(message: Message):
-    await message.answer('Обновите таблицу', reply_markup=kb.keyboards)
-
-
-@router.callback_query(F.data.startswith("create_tournament"))
-async def new_tournament(callback: CallbackQuery):
-    
+# Участие в турнире-------------------------------------------------------
+@router.callback_query(F.data.startswith("join_tournament"))
+async def join_the_tournament(callback: CallbackQuery, state: FSMContext):
+    tg_id = callback.from_user.id
     async with async_session_maker() as session:
         async with session.begin():
-            await create_tournament(session)
+            user = await get_user_by_tg_id(session, tg_id)
 
+            if await is_registered_in_tournament(session, user.id):
+                await callback.message.answer("Вы уже зарегистрированы в турнире!", reply_markup=kb.info_tournament)
+                return
+                
+    await state.set_state(RegisterState.waiting_team)
+    await callback.message.answer('За какую команду будете играть?')
+
+
+@router.message(RegisterState.waiting_team)
+async def get_team(message: Message, state: FSMContext):
+
+    team = message.text
+    tg_id = message.from_user.id
+
+    async with async_session_maker() as session:
+        async with session.begin():
+
+            user = await get_user_by_tg_id(session, tg_id)
+            name = await get_user_name(session, tg_id)
+
+            await register_tournament(
+                session,
+                user_id=user.id,
+                p_command=team,
+                p_name=name
+            )
+
+    await state.clear()
+    await message.answer("Вы зарегистрированы в турнире ✅", reply_markup=kb.info_tournament)
+
+# ------------------------------------------------------------------------
+
+
+# ---Обновление таблицы для нового турнира---
+@router.callback_query(F.data.startswith("create_tournament"))
+async def new_tournament(callback: CallbackQuery):
+    async with async_session_maker() as session:
+        async with session.begin():
+            await update_table(session)
     await callback.message.answer('Таблица готова к использованию')
