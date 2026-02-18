@@ -27,7 +27,6 @@ class Tournament(Base):
         ForeignKey('users.id'),
         nullable=False
     )
-
     players_command: Mapped[str] = mapped_column(nullable=True)
     players_name: Mapped[str] = mapped_column(nullable=True)
     games: Mapped[int] = mapped_column(default=0)

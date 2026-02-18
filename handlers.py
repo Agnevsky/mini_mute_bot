@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from aiogram import Router, types, Bot
 from aiogram import F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 
 from state import RegisterState
