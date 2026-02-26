@@ -12,6 +12,9 @@ async function loadTable() {
       <td>${row.games_win}</td>
       <td>${row.games_lose}</td>
       <td>${row.score}</td>
+      <td>${row.missed_goals}</td>
+      <td>${row.score_goals}</td>
+      <td>${row.different_goals}</td>
     `;
     tbody.appendChild(tr);
   });

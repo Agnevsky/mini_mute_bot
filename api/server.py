@@ -2,15 +2,18 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pathlib import Path
 
 from db.database import async_session_maker
 from db.request import get_tournament_table
 
 app = FastAPI()
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Папки фронта
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static_tournament", StaticFiles(directory=BASE_DIR / "static"), name="static")
+templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 # Страница фронта
 @app.get("/tournament")
@@ -32,6 +35,9 @@ async def tournament_json():
             "games": row.games,
             "games_win": row.games_win,
             "games_lose": row.games_lose,
-            "score": row.score
+            "score": row.score,
+            "missed_goals": row.missed_goals,
+            "score_goals": row.score_goals,
+            "different_goals":row.different_goals,
         } for row in table
     ])
