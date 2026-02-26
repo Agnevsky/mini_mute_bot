@@ -1,6 +1,6 @@
 from sqlalchemy import select, delete
 from sqlalchemy.dialects.postgresql import insert
-from db.models import User, Tournament
+from backend.db.models import User, Tournament
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

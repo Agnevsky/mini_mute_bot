@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, BigInteger
-from db.database import Base
+from backend.db.database import Base
 
 
 

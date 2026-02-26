@@ -6,13 +6,13 @@ from datetime import timedelta, datetime
 from aiogram import Router, types, Bot
 from aiogram import F
 from aiogram.types import Message, CallbackQuery
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 
-from state import RegisterState
-from db.request import update_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
-from db.database import async_session_maker
-import keyboards as kb
+from backend.tg.state import RegisterState
+from backend.db.request import update_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
+from backend.db.database import async_session_maker
+import backend.tg.keyboards as kb
 
 router = Router()
 
@@ -59,6 +59,11 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
 
         else:
             await message.answer(f"Ага соси приколист! ")
+
+# ---Инфо о боте----------------------------------------------------------------------\
+@router.message(Command('info'))
+async def info_bot(message: Message):
+    await message.answer('Информация о боте')
 
 
 # ---Регистрация в боте-----------------------------------------------------------------

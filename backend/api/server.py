@@ -4,16 +4,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
-from db.database import async_session_maker
-from db.request import get_tournament_table
+from ..db.database import async_session_maker
+from ..db.request import get_tournament_table
 
 app = FastAPI()
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Папки фронта
-app.mount("/static_tournament", StaticFiles(directory=BASE_DIR / "static"), name="static")
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
+app.mount("/static_tournament", StaticFiles(directory=BASE_DIR / "web" / "static"), name="static")
+templates = Jinja2Templates(directory=BASE_DIR / "web" / "templates")
 
 # Страница фронта
 @app.get("/tournament")
