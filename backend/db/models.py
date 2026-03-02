@@ -10,7 +10,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     tg_name: Mapped[str]
-    tg_username: Mapped[str]
+    tg_username: Mapped[str] = mapped_column(nullable=True)
     name: Mapped[str] = mapped_column(nullable=True)
 
     tournaments: Mapped[list["Tournament"]] = relationship(back_populates="player")
