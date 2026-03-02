@@ -66,3 +66,56 @@ async def is_registered_in_tournament(session: AsyncSession, user_id: int) -> bo
 async def get_tournament_table(session):
     result = await session.execute(select(Tournament))
     return result.scalars().all()
+
+
+async def update_game_result(session, player1_name: str, player2_name: str, score1: int, score2: int, is_extra_time: bool):
+    """Обновляет статистику обоих игроков после матча"""
+
+    # Ищем игроков по имени в турнирной таблице (players_name)
+    r1 = await session.execute(select(Tournament).where(Tournament.players_name.ilike(player1_name)))
+    r2 = await session.execute(select(Tournament).where(Tournament.players_name.ilike(player2_name)))
+
+    t1 = r1.scalar_one_or_none()
+    t2 = r2.scalar_one_or_none()
+
+    if not t1 or not t2:
+        return None, player1_name if not t1 else None, player2_name if not t2 else None
+
+    # Обновляем статистику
+    t1.games += 1
+    t2.games += 1
+
+    t1.score_goals += score1
+    t1.missed_goals += score2
+    t1.different_goals = t1.score_goals - t1.missed_goals
+
+    t2.score_goals += score2
+    t2.missed_goals += score1
+    t2.different_goals = t2.score_goals - t2.missed_goals
+
+    if is_extra_time:
+        if score1 > score2:
+            t1.games_win += 1
+            t1.win_extra_time += 1
+            t1.score += 2
+            t2.games_lose += 1
+            t2.lose_extra_time += 1
+            t2.score += 1
+        else:
+            t2.games_win += 1
+            t2.win_extra_time += 1
+            t2.score += 2
+            t1.games_lose += 1
+            t1.lose_extra_time += 1
+            t1.score += 1
+    else:
+        if score1 > score2:
+            t1.games_win += 1
+            t1.score += 3
+            t2.games_lose += 1
+        elif score2 > score1:
+            t2.games_win += 1
+            t2.score += 3
+            t1.games_lose += 1
+
+    return True, None, None

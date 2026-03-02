@@ -4,3 +4,5 @@ class RegisterState(StatesGroup):
     waiting_name = State()
     waiting_team = State()
 
+    waiting_result_game = State()
+
