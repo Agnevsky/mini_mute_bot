@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-BOT_USERNAME = "test_work_my_bot"
+BOT_USERNAME = "MutePigsBot"
 
 # Меню в общем чате
 keyboards = InlineKeyboardMarkup(inline_keyboard=[
