@@ -166,10 +166,8 @@ async def get_team(message: Message, state: FSMContext):
             )
 
     await state.clear()
-    await message.answer("Вы зарегистрированы в турнире ✅", reply_markup=kb.info_tournament)
+    await message.answer("Вы зарегистрированы в турнире ✅", reply_markup=kb.in_tournament)
 
-
-@router.callback_query(F.data.startswith())
 
 # ---Обновление таблицы для нового турнира---
 @router.callback_query(F.data.startswith("create_tournament"))
