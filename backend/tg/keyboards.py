@@ -1,6 +1,4 @@
-# keyboards.py
-
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 BOT_USERNAME = "test_work_my_bot"
 
@@ -12,10 +10,7 @@ keyboards = InlineKeyboardMarkup(inline_keyboard=[
 in_tournament = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Очистить таблицу', callback_data='create_tournament')],
     [InlineKeyboardButton(text='Регистрация в турнире', url=f'https://t.me/{BOT_USERNAME}?start=join_tournament')],
-    [InlineKeyboardButton(text='Внести результаты игр', url=f'https://t.me/{BOT_USERNAME}?start=result_game')]
+    [InlineKeyboardButton(text='Внести результаты игр', url=f'https://t.me/{BOT_USERNAME}?start=result_game')],
+    [InlineKeyboardButton(text='Открыть таблицу 📊',  url='https://nhl.oroginaltournament.ru')]
 ])
 
-
-info_tournament = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Таблица', callback_data='table')]
-])

@@ -23,8 +23,6 @@ load_dotenv()
 admin_list = json.loads(os.getenv("ADMIN_ID"))
 
 
-# handlers.py
-
 # ---/start только в личке---
 @router.message(CommandStart(), F.chat.type == "private")
 async def say_hello(message: Message, command: CommandObject, state: FSMContext):
@@ -58,7 +56,7 @@ async def say_hello(message: Message, command: CommandObject, state: FSMContext)
     elif command.args == "result_game":
         await state.set_state(RegisterState.waiting_result_game)
         await message.answer('Жду результаты')
-
+    
 
 
 # ---Команда для показа меню в общем чате---
@@ -170,6 +168,8 @@ async def get_team(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("Вы зарегистрированы в турнире ✅", reply_markup=kb.info_tournament)
 
+
+@router.callback_query(F.data.startswith())
 
 # ---Обновление таблицы для нового турнира---
 @router.callback_query(F.data.startswith("create_tournament"))
