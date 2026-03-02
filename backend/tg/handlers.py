@@ -14,7 +14,7 @@ from backend.db.database import async_session_maker
 
 import backend.tg.keyboards as kb
 from backend.tg.state import RegisterState
-from backend.tg.parser import parse_result
+from backend.tg.parser import parse_results
 
 
 router = Router()
@@ -75,9 +75,9 @@ async def show_menu(message: Message):
 # ---Функционал для внесения результатов в таблицу---
 @router.message(RegisterState.waiting_result_game)
 async def get_result_game(message: Message, state: FSMContext):
-    parsed = parse_result(message.text)
+    results, errors = parse_results(message.text)
 
-    if not parsed:
+    if not results and errors:
         await message.answer(
             "Не смог распознать результат 😕\n"
             "Введите в формате: Илья - Андрей 5 - 0\n"
@@ -85,24 +85,31 @@ async def get_result_game(message: Message, state: FSMContext):
         )
         return
 
-    player1, player2, score1, score2, is_extra_time = parsed
+    success_list = []
+    fail_list = []
 
     async with async_session_maker() as session:
         async with session.begin():
-            success, not_found1, not_found2 = await update_game_result(
-                session, player1, player2, score1, score2, is_extra_time
-            )
+            for player1, player2, score1, score2, is_extra_time in results:
+                success, not_found1, not_found2 = await update_game_result(
+                    session, player1, player2, score1, score2, is_extra_time
+                )
+                extra = " (от)" if is_extra_time else ""
+                if success:
+                    success_list.append(f"{player1.title()} {score1} - {score2} {player2.title()}{extra}")
+                else:
+                    missing = ", ".join(filter(None, [not_found1, not_found2]))
+                    fail_list.append(f"Не найден: {missing}")
 
-    if not success:
-        missing = ", ".join(filter(None, [not_found1, not_found2]))
-        await message.answer(f"Игрок(и) не найден(ы) в турнирной таблице: {missing}")
-        return
+    response = ""
+    if success_list:
+        response += "Внесено ✅\n" + "\n".join(success_list)
+    if errors:
+        response += "\n\nНе распознано 😕\n" + "\n".join(errors)
+    if fail_list:
+        response += "\n\nОшибки:\n" + "\n".join(fail_list)
 
-    extra = " (овертайм)" if is_extra_time else ""
-    await message.answer(
-        f"Результат внесён ✅\n"
-        f"{player1.title()} {score1} - {score2} {player2.title()}{extra}"
-    )
+    await message.answer(response)
     await state.clear()
 
 
