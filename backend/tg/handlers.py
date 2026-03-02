@@ -46,7 +46,7 @@ async def say_hello(message: Message, command: CommandObject, state: FSMContext)
         async with async_session_maker() as session:
             async with session.begin():
                 if await is_registered_in_tournament(session, user.id):
-                    await message.answer("Вы уже зарегистрированы в турнире!", reply_markup=kb.info_tournament)
+                    await message.answer("Вы уже зарегистрированы в турнире!", reply_markup=kb.in_tournament)
                     return
 
         await state.set_state(RegisterState.waiting_team)
