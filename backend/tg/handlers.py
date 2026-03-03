@@ -143,7 +143,7 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
 async def get_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     tg_name = message.from_user.first_name
-    tg_username = message.from_user.username
+    tg_username = message.from_user.username or ""
     name = message.text
 
     async with async_session_maker() as session:
