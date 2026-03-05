@@ -21,6 +21,8 @@ async function loadTable() {
       <td>${row.games}</td>
       <td>${row.games_win}</td>
       <td>${row.games_lose}</td>
+      <td>${row.win_extra_time}</td>
+      <td>${row.lose_extra_time}</td>
       <td>${row.score}</td>
       <td>${row.missed_goals}</td>
       <td>${row.score_goals}</td>
