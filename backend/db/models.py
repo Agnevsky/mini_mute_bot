@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, BigInteger
+from sqlalchemy import ForeignKey, BigInteger, Boolean
 from backend.db.database import Base
 
 
@@ -14,8 +14,6 @@ class User(Base):
     name: Mapped[str] = mapped_column(nullable=True)
 
     tournaments: Mapped[list["Tournament"]] = relationship(back_populates="player")
-
-
 
 
 class Tournament(Base):
@@ -40,3 +38,14 @@ class Tournament(Base):
     different_goals: Mapped[int] = mapped_column(default=0)
 
     player: Mapped["User"] = relationship(back_populates="tournaments")
+
+
+class Match(Base):
+    __tablename__ = 'matches'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    player1_id: Mapped[int] = mapped_column(ForeignKey('tournaments.id'), nullable=False)
+    player2_id: Mapped[int] = mapped_column(ForeignKey('tournaments.id'), nullable=False)
+    score1: Mapped[int]
+    score2: Mapped[int]
+    is_extra_time: Mapped[bool] = mapped_column(default=False)

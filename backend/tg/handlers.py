@@ -8,10 +8,12 @@ from aiogram import F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.fsm.context import FSMContext
+from aiogram.types import BufferedInputFile
 
-from backend.db.request import update_game_result, update_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
+from backend.db.request import update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
 from backend.db.database import async_session_maker
 
+from backend.tg.export import create_tournament_excel
 import backend.tg.keyboards as kb
 from backend.tg.state import RegisterState
 from backend.tg.parser import parse_results
@@ -176,10 +178,29 @@ async def get_team(message: Message, state: FSMContext):
     await message.answer("Вы зарегистрированы в турнире ✅", reply_markup=kb.in_tournament)
 
 
-# ---Обновление таблицы для нового турнира---
-@router.callback_query(F.data.startswith("create_tournament"))
-async def new_tournament(callback: CallbackQuery):
+@router.callback_query(F.data.startswith("end_tournament"))
+async def end_tournament(callback: CallbackQuery):
+    async with async_session_maker() as session:
+        players = await get_tournament_table(session)
+
+    # сортировка
+    players = sorted(players, key=lambda p: (
+        -p.score,
+        -(p.games_win - p.win_extra_time),
+        -p.games_win,
+        -p.different_goals
+    ))
+
+    # отправляем файл
+    file = create_tournament_excel(players)
+    await callback.message.answer_document(
+        BufferedInputFile(file.read(), filename="tournament.xlsx"),
+        caption="Итоговая турнирная таблица 📊"
+    )
+
+    # очищаем таблицу
     async with async_session_maker() as session:
         async with session.begin():
             await update_table(session)
-    await callback.message.answer('Таблица готова к использованию')
+
+    await callback.message.answer('Таблица очищена, турнир завершён ✅')
