@@ -73,10 +73,10 @@ async function loadData() {
         div.className = 'result-item';
         const extra = r.extra_time ? '<span class="result-badge">ОТ</span>' : '<span class="result-badge-empty"></span>';
         div.innerHTML = `
-            <span class="result-num">${i + 1}</span>
             <span class="result-player">${r.player1} <span class="result-team">(${r.team1 || ''})</span></span>
-            <span class="result-score">${r.score1} : ${r.score2} ${extra}</span>
+            <span class="result-score">${r.score1} : ${r.score2}</span>
             <span class="result-player right">${r.player2} <span class="result-team">(${r.team2 || ''})</span></span>
+            ${extra}
         `;
         resultsList.appendChild(div);
       });
