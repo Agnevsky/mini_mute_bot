@@ -14,6 +14,6 @@ in_tournament = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Внести результаты игр', url=f'https://t.me/{BOT_USERNAME}?start=result_game')],
     [InlineKeyboardButton(text='Открыть таблицу 📊',  url='https://nhl.originaltournament.ru')],
     [InlineKeyboardButton(text='Завершить турнир',  callback_data='end_tournament')],
-    [InlineKeyboardButton(text='Удалить пользователя',  callback_data='delete_user')],
+    # [InlineKeyboardButton(text='Удалить пользователя',  callback_data='delete_user')],
 ])
 

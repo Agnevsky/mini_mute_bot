@@ -122,13 +122,13 @@ async def update_game_result(session, player1_name: str, player2_name: str, scor
     return True, None, None, t1.players_command, t2.players_command
 
 
-async def delete_user(session: AsyncSession, tg_id: int):
-    user = await get_user_by_tg_id(session, tg_id)
-    if not user:
-        return False
+# async def delete_user(session: AsyncSession, tg_id: int):
+#     user = await get_user_by_tg_id(session, tg_id)
+#     if not user:
+#         return False
     
-    await session.execute(delete(User).where(User.tg_id == tg_id))
-    return True
+#     await session.execute(delete(User).where(User.tg_id == tg_id))
+#     return True
 
 
 async def add_game_result(session, player1, score1, score2, player2, is_extra_time, team1=None, team2=None):

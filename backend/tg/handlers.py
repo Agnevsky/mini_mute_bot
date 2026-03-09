@@ -207,18 +207,18 @@ async def end_tournament(callback: CallbackQuery):
     await callback.message.answer('Таблица очищена, турнир завершён ✅')
 
 
-# удаление пользователя из бд бота(не турнира)
-@router.callback_query(F.data == "delete_user")
-async def delete_user_handler(callback: CallbackQuery):
-    tg_id = callback.from_user.id
+# # удаление пользователя из бд бота(не турнира)
+# @router.callback_query(F.data == "delete_user")
+# async def delete_user_handler(callback: CallbackQuery):
+#     tg_id = callback.from_user.id
     
-    async with async_session_maker() as session:
-        async with session.begin():
-            success = await delete_user(session, tg_id)
+#     async with async_session_maker() as session:
+#         async with session.begin():
+#             success = await delete_user(session, tg_id)
     
-    if success:
-        await callback.message.answer("Вы удалены из бота ✅")
-    else:
-        await callback.message.answer("Пользователь не найден ❌")
+#     if success:
+#         await callback.message.answer("Вы удалены из бота ✅")
+#     else:
+#         await callback.message.answer("Пользователь не найден ❌")
     
-    await callback.answer()
+#     await callback.answer()

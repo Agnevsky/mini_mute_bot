@@ -204,8 +204,7 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
 .results-list { display: flex; flex-direction: column; gap: 10px; }
 
 .result-item {
-    display: grid;
-    grid-template-columns: 30px 1fr auto 1fr;
+    display: flex;
     align-items: center;
     gap: 12px;
     background: rgba(255,255,255,0.05);
@@ -221,17 +220,20 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
     color: rgba(43,218,206,0.7);
     font-weight: 700;
     font-size: 0.85rem;
+    width: 24px;
+    flex-shrink: 0;
 }
 
 .result-player {
     font-weight: 500;
     color: rgba(240,231,231,0.9);
     font-size: 0.9rem;
-    min-width: 120px;
+    flex: 1;
+    text-align: right;
 }
 
 .result-player.right {
-    text-align: right;
+    text-align: left;
 }
 
 .result-score {
@@ -240,6 +242,8 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
     color: #fff;
     letter-spacing: 4px;
     text-align: center;
+    flex-shrink: 0;
+    padding: 0 16px;
 }
 
 .result-team {
