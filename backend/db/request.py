@@ -119,7 +119,7 @@ async def update_game_result(session, player1_name: str, player2_name: str, scor
             t2.score += 3
             t1.games_lose += 1
 
-    return True, None, None
+    return True, None, None, t1.players_command, t2.players_command
 
 
 async def delete_user(session: AsyncSession, tg_id: int):
@@ -131,11 +131,12 @@ async def delete_user(session: AsyncSession, tg_id: int):
     return True
 
 
-async def add_game_result(session, player1, score1, score2, player2, is_extra_time):
+async def add_game_result(session, player1, score1, score2, player2, is_extra_time, team1=None, team2=None):
     result = GameResult(
         player1=player1, player2=player2,
         score1=score1, score2=score2,
-        is_extra_time=is_extra_time
+        is_extra_time=is_extra_time,
+        team1=team1, team2=team2
     )
     session.add(result)
 

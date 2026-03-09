@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, BigInteger, Boolean
 from backend.db.database import Base
-from datetime import datetime
 
 
 
@@ -61,4 +60,5 @@ class GameResult(Base):
     score1: Mapped[int] = mapped_column()
     score2: Mapped[int] = mapped_column()
     is_extra_time: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    team1: Mapped[str] = mapped_column(nullable=True)
+    team2: Mapped[str] = mapped_column(nullable=True)

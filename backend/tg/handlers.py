@@ -74,11 +74,9 @@ async def show_menu(message: Message):
 
 
 
-# ---Функционал для внесения результатов в таблицу---
 @router.message(RegisterState.waiting_result_game)
 async def get_result_game(message: Message, state: FSMContext):
     results, errors = parse_results(message.text)
-    count_game = 0
 
     if not results and errors:
         await message.answer(
@@ -94,19 +92,16 @@ async def get_result_game(message: Message, state: FSMContext):
     async with async_session_maker() as session:
         async with session.begin():
             for player1, player2, score1, score2, is_extra_time in results:
-                success, not_found1, not_found2 = await update_game_result(
+                success, not_found1, not_found2, team1, team2 = await update_game_result(
                     session, player1, player2, score1, score2, is_extra_time
                 )
                 extra = " (от)" if is_extra_time else ""
                 if success:
                     success_list.append(f"{player1.title()} {score1} - {score2} {player2.title()}{extra}")
-                    await add_game_result(session, player1, score1, score2, player2, is_extra_time)
-
+                    await add_game_result(session, player1, score1, score2, player2, is_extra_time, team1, team2)
                 else:
                     missing = ", ".join(filter(None, [not_found1, not_found2]))
                     fail_list.append(f"Не найден: {missing}")
-
-    await add_game_result(session, player1, score1, score2, player2, is_extra_time)
 
     response = ""
     if success_list:
