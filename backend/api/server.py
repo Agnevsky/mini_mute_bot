@@ -6,7 +6,6 @@ from pathlib import Path
 
 from ..db.database import async_session_maker
 from ..db.request import get_tournament_table, get_game_results
-from ..tg.handlers import result_dict
 
 app = FastAPI()
 
