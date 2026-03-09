@@ -110,7 +110,7 @@ table {
 th, td {
     padding: 12px 10px;
     text-align: center;
-    color: rgb(240, 231, 231);
+    color: rgb(255, 248, 248);
     border: none;
 }
 
@@ -157,7 +157,7 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
 /* === STATS GRID === */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
@@ -266,6 +266,11 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
     margin-left: 8px;
 }
 
+.result-badge-empty {
+    width: 32px;
+    display: inline-block;
+}
+
 /* === УТИЛИТЫ === */
 .empty-state {
     text-align: center;
@@ -283,6 +288,10 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
 }
 
 @media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .header-title {
         font-size: 2rem;
     }
