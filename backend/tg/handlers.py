@@ -10,7 +10,7 @@ from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile
 
-from backend.db.request import add_game_result, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
+from backend.db.request import get_game_results, update_game_record, rollback_game_result, add_game_result, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
 from backend.db.database import async_session_maker
 
 from backend.tg.export import create_tournament_excel
@@ -53,7 +53,23 @@ async def say_hello(message: Message, command: CommandObject, state: FSMContext)
 
         await state.set_state(RegisterState.waiting_team)
         await message.answer("За какую команду будете играть?")
-
+        
+    elif command.args == "edit_result":
+        async with async_session_maker() as session:
+            results = await get_game_results(session)
+        
+        if not results:
+            await message.answer("Нет сыгранных игр")
+            return
+        
+        text = "Выбери номер игры для редактирования:\n\n"
+        for i, r in enumerate(results, 1):
+            extra = " (ОТ)" if r.is_extra_time else ""
+            text += f"{i}. {r.player1.title()} {r.score1}:{r.score2} {r.player2.title()}{extra}\n"
+        
+        await state.set_state(RegisterState.waiting_edit_choice)
+        await state.update_data(results=[r.id for r in results])
+        await message.answer(text)
 
     elif command.args == "result_game":
         await state.set_state(RegisterState.waiting_result_game)
@@ -207,18 +223,59 @@ async def end_tournament(callback: CallbackQuery):
     await callback.message.answer('Таблица очищена, турнир завершён ✅')
 
 
-# # удаление пользователя из бд бота(не турнира)
-# @router.callback_query(F.data == "delete_user")
-# async def delete_user_handler(callback: CallbackQuery):
-#     tg_id = callback.from_user.id
+# --- Редактирование результатов игры ---
+@router.message(RegisterState.waiting_edit_choice)
+async def get_edit_choice(message: Message, state: FSMContext):
+    try:
+        choice = int(message.text) - 1
+    except ValueError:
+        await message.answer("Введи число")
+        return
     
-#     async with async_session_maker() as session:
-#         async with session.begin():
-#             success = await delete_user(session, tg_id)
+    data = await state.get_data()
+    result_ids = data.get("results", [])
     
-#     if success:
-#         await callback.message.answer("Вы удалены из бота ✅")
-#     else:
-#         await callback.message.answer("Пользователь не найден ❌")
+    if choice < 0 or choice >= len(result_ids):
+        await message.answer("Такого номера нет")
+        return
     
-#     await callback.answer()
+    await state.update_data(edit_id=result_ids[choice])
+    await state.set_state(RegisterState.waiting_edit_result)
+    await message.answer(
+        "Введи новый результат в формате:\n"
+        "Имя игрока - Имя игрока 5 - 0\n"
+        "Для овертайма добавь 'от' в конце"
+    )
+
+
+@router.message(RegisterState.waiting_edit_result)
+async def apply_edit_result(message: Message, state: FSMContext):
+    results, errors = parse_results(message.text)
+    
+    if not results or errors:
+        await message.answer("Не смог распознать результат 😕")
+        return
+    
+    data = await state.get_data()
+    edit_id = data.get("edit_id")
+    
+    player1, player2, score1, score2, is_extra_time = results[0]
+    
+    async with async_session_maker() as session:
+        async with session.begin():
+            # откатываем старую статистику
+            await rollback_game_result(session, edit_id)
+            # применяем новую
+            success, not_found1, not_found2, team1, team2 = await update_game_result(
+                session, player1, player2, score1, score2, is_extra_time
+            )
+            if success:
+                await update_game_record(session, edit_id, player1, player2, score1, score2, is_extra_time, team1, team2)
+    
+    if success:
+        extra = " (ОТ)" if is_extra_time else ""
+        await message.answer(f"Результат обновлён ✅\n{player1.title()} {score1}:{score2} {player2.title()}{extra}")
+    else:
+        await message.answer("Ошибка — игрок не найден ❌")
+    
+    await state.clear()

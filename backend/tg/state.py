@@ -6,3 +6,6 @@ class RegisterState(StatesGroup):
 
     waiting_result_game = State()
 
+    waiting_edit_choice: str
+    waiting_edit_result: str
+
