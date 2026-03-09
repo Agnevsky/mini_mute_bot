@@ -72,13 +72,11 @@ async function loadData() {
         const div = document.createElement('div');
         div.className = 'result-item';
         const extra = r.extra_time ? '<span class="result-badge">ОТ</span>' : '<span class="result-badge-empty"></span>';
-        const team1 = r.team1 ? ` <span class="result-team">(${r.team1})</span>` : '';
-        const team2 = r.team2 ? ` <span class="result-team">(${r.team2})</span>` : '';
         div.innerHTML = `
-          <span class="result-num">${i + 1}</span>
-          <span class="result-player">${r.player1}${team1}</span>
-          <span class="result-score">${r.score1} : ${r.score2}${extra}</span>
-          <span class="result-player right">${r.player2}${team2}</span>
+            <span class="result-num">${i + 1}</span>
+            <span class="result-player">${r.player1} <span class="result-team">(${r.team1 || ''})</span></span>
+            <span class="result-score">${r.score1} : ${r.score2} ${extra}</span>
+            <span class="result-player right">${r.player2} <span class="result-team">(${r.team2 || ''})</span></span>
         `;
         resultsList.appendChild(div);
       });
