@@ -10,7 +10,7 @@ from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile
 
-from backend.db.request import add_game_result, delete_user, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
+from backend.db.request import add_game_result, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
 from backend.db.database import async_session_maker
 
 from backend.tg.export import create_tournament_excel
