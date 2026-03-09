@@ -278,3 +278,19 @@ tr:nth-child(3) td:first-child { color: #CD7F32; }
     font-size: 0.85rem;
     letter-spacing: 0.1em;
 }
+
+@media (max-width: 600px) {
+    th, td {
+        padding: 8px 4px;
+        font-size: 0.72rem;
+    }
+
+    .header-title {
+        font-size: 2rem;
+    }
+
+    th:nth-child(8), td:nth-child(8),
+    th:nth-child(9), td:nth-child(9) {
+        display: none;
+    }
+}

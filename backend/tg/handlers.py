@@ -73,7 +73,7 @@ async def show_menu(message: Message):
         await message.answer("Меню", reply_markup=kb.keyboards)
 
 
-
+# --- Получение результатов игры от пользователя ---
 @router.message(RegisterState.waiting_result_game)
 async def get_result_game(message: Message, state: FSMContext):
     results, errors = parse_results(message.text)
@@ -146,7 +146,7 @@ async def get_name(message: Message, state: FSMContext):
     tg_id = message.from_user.id
     tg_name = message.from_user.first_name
     tg_username = message.from_user.username or ""
-    name = message.text
+    name = message.text.title()
 
     async with async_session_maker() as session:
         async with session.begin():
@@ -170,8 +170,8 @@ async def get_team(message: Message, state: FSMContext):
             await register_tournament(
                 session,
                 user_id=user.id,
-                p_command=team,
-                p_name=name
+                p_command=team.upper(),
+                p_name=name.title()
             )
 
     await state.clear()
