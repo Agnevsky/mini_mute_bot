@@ -2,12 +2,35 @@ async function loadData() {
   const res = await fetch('/tournament/json');
   const data = await res.json();
 
+  const h2hRes = await fetch('/head2head/json');
+  const h2hData = await h2hRes.json();
+
+  function getH2HPoints(h2h, playerA, playerB) {
+    const key1 = `${playerA}_${playerB}`;
+    const key2 = `${playerB}_${playerA}`;
+    const match = h2h[key1] || h2h[key2];
+    if (!match) return 0;
+    return match[playerA] || 0;
+  }
+
   data.sort((a, b) => {
+    // 1. Очки
     if (b.score !== a.score) return b.score - a.score;
-    const a_reg = a.games_win - (a.win_extra_time || 0);
-    const b_reg = b.games_win - (b.win_extra_time || 0);
-    if (b_reg !== a_reg) return b_reg - a_reg;
+
+    // 2. Победы в основное время (без овертайма)
+    const a_reg_win = a.games_win - (a.win_extra_time || 0);
+    const b_reg_win = b.games_win - (b.win_extra_time || 0);
+    if (b_reg_win !== a_reg_win) return b_reg_win - a_reg_win;
+
+    // 3. Общее число побед
     if (b.games_win !== a.games_win) return b.games_win - a.games_win;
+
+    // 4. Очки в личных встречах
+    const aH2H = getH2HPoints(h2hData, a.players_name, b.players_name);
+    const bH2H = getH2HPoints(h2hData, b.players_name, a.players_name);
+    if (bH2H !== aH2H) return bH2H - aH2H;
+
+    // 5. Разница шайб
     return b.different_goals - a.different_goals;
   });
 
@@ -34,33 +57,33 @@ async function loadData() {
     });
   }
 
-// === РЕЗУЛЬТАТЫ ИГР ===
-const resultsRes = await fetch('/results/json');
-const resultsData = await resultsRes.json();
+  // === РЕЗУЛЬТАТЫ ИГР ===
+  const resultsRes = await fetch('/results/json');
+  const resultsData = await resultsRes.json();
 
-const resultsList = document.getElementById('results-list');
-if (resultsList) {
+  const resultsList = document.getElementById('results-list');
+  if (resultsList) {
     resultsList.innerHTML = '';
-    
+
     if (resultsData.length === 0) {
-        resultsList.innerHTML = '<p style="text-align:center; color:#888">Игры ещё не сыграны</p>';
+      resultsList.innerHTML = '<p style="text-align:center; color:#888">Игры ещё не сыграны</p>';
     } else {
-        resultsData.forEach((r, i) => {
-            const div = document.createElement('div');
-            div.className = 'result-item';
-            const extra = r.extra_time ? '<span class="result-badge">ОТ</span>' : '';
-            const team1 = r.team1 ? ` <span class="result-team">(${r.team1})</span>` : '';
-            const team2 = r.team2 ? ` <span class="result-team">(${r.team2})</span>` : '';
-            div.innerHTML = `
-                <span class="result-num">${i + 1}</span>
-                <span class="result-player">${r.player1}${team1}</span>
-                <span class="result-score">${r.score1} : ${r.score2}${extra}</span>
-                <span class="result-player right">${r.player2}${team2}</span>
-            `;
-            resultsList.appendChild(div);
-        });
+      resultsData.forEach((r, i) => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        const extra = r.extra_time ? '<span class="result-badge">ОТ</span>' : '';
+        const team1 = r.team1 ? ` <span class="result-team">(${r.team1})</span>` : '';
+        const team2 = r.team2 ? ` <span class="result-team">(${r.team2})</span>` : '';
+        div.innerHTML = `
+          <span class="result-num">${i + 1}</span>
+          <span class="result-player">${r.player1}${team1}</span>
+          <span class="result-score">${r.score1} : ${r.score2}${extra}</span>
+          <span class="result-player right">${r.player2}${team2}</span>
+        `;
+        resultsList.appendChild(div);
+      });
     }
-}
+  }
 
   // === СТАТИСТИКА ===
   const statsGrid = document.getElementById('stats-grid');

@@ -58,3 +58,36 @@ async def results_json():
             
         } for r in results
     ])
+
+
+@app.get("/head2head/json")
+async def head2head_json():
+    async with async_session_maker() as session:
+        results = await get_game_results(session)
+    
+    # Считаем очки в личных встречах
+    h2h = {}
+    
+    for r in results:
+        p1, p2 = r.player1, r.player2
+        key = tuple(sorted([p1, p2]))
+        
+        if key not in h2h:
+            h2h[key] = {p1: 0, p2: 0}
+        
+        if r.is_extra_time:
+            if r.score1 > r.score2:
+                h2h[key][p1] = h2h[key].get(p1, 0) + 2
+                h2h[key][p2] = h2h[key].get(p2, 0) + 1
+            else:
+                h2h[key][p2] = h2h[key].get(p2, 0) + 2
+                h2h[key][p1] = h2h[key].get(p1, 0) + 1
+        else:
+            if r.score1 > r.score2:
+                h2h[key][p1] = h2h[key].get(p1, 0) + 3
+            elif r.score2 > r.score1:
+                h2h[key][p2] = h2h[key].get(p2, 0) + 3
+    
+    return JSONResponse(content={
+        f"{k[0]}_{k[1]}": v for k, v in h2h.items()
+    })
