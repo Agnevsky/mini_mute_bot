@@ -1,6 +1,6 @@
 from sqlalchemy import select, delete
 from sqlalchemy.dialects.postgresql import insert
-from backend.db.models import User, Tournament
+from backend.db.models import User, Tournament, GameResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -37,6 +37,7 @@ async def get_user_name(session: AsyncSession, tg_id: int):
 
 async def update_table(session: AsyncSession):
 
+    await session.execute(delete(GameResult))
     await session.execute(delete(Tournament))
     await session.commit()
 
@@ -128,3 +129,16 @@ async def delete_user(session: AsyncSession, tg_id: int):
     
     await session.execute(delete(User).where(User.tg_id == tg_id))
     return True
+
+
+async def add_game_result(session, player1, score1, score2, player2, is_extra_time):
+    result = GameResult(
+        player1=player1, player2=player2,
+        score1=score1, score2=score2,
+        is_extra_time=is_extra_time
+    )
+    session.add(result)
+
+async def get_game_results(session):
+    result = await session.execute(select(GameResult).order_by(GameResult.id))
+    return result.scalars().all()

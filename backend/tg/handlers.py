@@ -10,7 +10,7 @@ from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile
 
-from backend.db.request import delete_user, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
+from backend.db.request import add_game_result, delete_user, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
 from backend.db.database import async_session_maker
 
 from backend.tg.export import create_tournament_excel
@@ -24,7 +24,6 @@ router = Router()
 load_dotenv()
 admin_list = json.loads(os.getenv("ADMIN_ID"))
 
-result_dict = {}
 
 # ---/start только в личке---
 @router.message(CommandStart(), F.chat.type == "private")
@@ -95,7 +94,6 @@ async def get_result_game(message: Message, state: FSMContext):
     async with async_session_maker() as session:
         async with session.begin():
             for player1, player2, score1, score2, is_extra_time in results:
-                result_dict[count_game] = [player1, score1, score2, player2, is_extra_time]
                 success, not_found1, not_found2 = await update_game_result(
                     session, player1, player2, score1, score2, is_extra_time
                 )
@@ -105,7 +103,8 @@ async def get_result_game(message: Message, state: FSMContext):
                 else:
                     missing = ", ".join(filter(None, [not_found1, not_found2]))
                     fail_list.append(f"Не найден: {missing}")
-            count_game = len(result_dict) + 1
+
+    await add_game_result(session, player1, score1, score2, player2, is_extra_time)
 
     response = ""
     if success_list:
@@ -207,7 +206,7 @@ async def end_tournament(callback: CallbackQuery):
         async with session.begin():
             await update_table(session)
 
-    result_dict.clear()
+    
     await callback.message.answer('Таблица очищена, турнир завершён ✅')
 
 

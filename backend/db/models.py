@@ -49,3 +49,15 @@ class Match(Base):
     score1: Mapped[int]
     score2: Mapped[int]
     is_extra_time: Mapped[bool] = mapped_column(default=False)
+
+
+class GameResult(Base):
+    __tablename__ = 'game_results'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    player1: Mapped[str] = mapped_column()
+    player2: Mapped[str] = mapped_column()
+    score1: Mapped[int] = mapped_column()
+    score2: Mapped[int] = mapped_column()
+    is_extra_time: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)

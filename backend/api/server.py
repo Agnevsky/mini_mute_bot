@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
 from ..db.database import async_session_maker
-from ..db.request import get_tournament_table
+from ..db.request import get_tournament_table, get_game_results
 from ..tg.handlers import result_dict
 
 app = FastAPI()
@@ -44,14 +44,15 @@ async def tournament_json():
 
 @app.get("/results/json")
 async def results_json():
+    async with async_session_maker() as session:
+        results = await get_game_results(session)
     return JSONResponse(content=[
         {
-            "game": num,
-            "player1": val[0],
-            "score1": val[1],
-            "score2": val[2],
-            "player2": val[3],
-            "extra_time": val[4]
-        }
-        for num, val in result_dict.items()
+            "game": r.id,
+            "player1": r.player1,
+            "score1": r.score1,
+            "score2": r.score2,
+            "player2": r.player2,
+            "extra_time": r.is_extra_time
+        } for r in results
     ])
