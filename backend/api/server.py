@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ..db.database import async_session_maker
 from ..db.request import get_tournament_table
+from ..tg.handlers import result_dict
 
 app = FastAPI()
 
@@ -39,4 +40,18 @@ async def tournament_json():
             "score_goals": row.score_goals,
             "different_goals":row.different_goals,
         } for row in table
+    ])
+
+@app.get("/results/json")
+async def results_json():
+    return JSONResponse(content=[
+        {
+            "game": num,
+            "player1": val[0],
+            "score1": val[1],
+            "score2": val[2],
+            "player2": val[3],
+            "extra_time": val[4]
+        }
+        for num, val in result_dict.items()
     ])

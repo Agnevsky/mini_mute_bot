@@ -10,7 +10,7 @@ from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile
 
-from backend.db.request import update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
+from backend.db.request import delete_user, update_game_result, update_table, get_tournament_table, add_user, get_user_by_tg_id, register_tournament, get_user_name, is_registered_in_tournament
 from backend.db.database import async_session_maker
 
 from backend.tg.export import create_tournament_excel
@@ -24,6 +24,7 @@ router = Router()
 load_dotenv()
 admin_list = json.loads(os.getenv("ADMIN_ID"))
 
+result_dict = {}
 
 # ---/start только в личке---
 @router.message(CommandStart(), F.chat.type == "private")
@@ -78,12 +79,13 @@ async def show_menu(message: Message):
 @router.message(RegisterState.waiting_result_game)
 async def get_result_game(message: Message, state: FSMContext):
     results, errors = parse_results(message.text)
+    count_game = 0
 
     if not results and errors:
         await message.answer(
             "Не смог распознать результат 😕\n"
-            "Введите в формате: Илья - Андрей 5 - 0\n"
-            "Для овертайма добавьте 'от' в конце: Илья - Андрей 5 - 4 от"
+            "Введите в формате: Имя игрока - Имя игрока 5 - 0\n"
+            "Для овертайма добавьте 'от' в конце: Имя игрока - Имя игрока 5 - 4 от"
         )
         return
 
@@ -93,6 +95,7 @@ async def get_result_game(message: Message, state: FSMContext):
     async with async_session_maker() as session:
         async with session.begin():
             for player1, player2, score1, score2, is_extra_time in results:
+                result_dict[count_game] = [player1, score1, score2, player2, is_extra_time]
                 success, not_found1, not_found2 = await update_game_result(
                     session, player1, player2, score1, score2, is_extra_time
                 )
@@ -102,6 +105,7 @@ async def get_result_game(message: Message, state: FSMContext):
                 else:
                     missing = ", ".join(filter(None, [not_found1, not_found2]))
                     fail_list.append(f"Не найден: {missing}")
+            count_game = len(result_dict) + 1
 
     response = ""
     if success_list:
@@ -177,7 +181,7 @@ async def get_team(message: Message, state: FSMContext):
     await state.clear()
     await message.answer("Вы зарегистрированы в турнире ✅", reply_markup=kb.in_tournament)
 
-
+# ---очистка таблицы---
 @router.callback_query(F.data.startswith("end_tournament"))
 async def end_tournament(callback: CallbackQuery):
     async with async_session_maker() as session:
@@ -203,4 +207,22 @@ async def end_tournament(callback: CallbackQuery):
         async with session.begin():
             await update_table(session)
 
+    result_dict.clear()
     await callback.message.answer('Таблица очищена, турнир завершён ✅')
+
+
+# удаление пользователя из бд бота(не турнира)
+@router.callback_query(F.data == "delete_user")
+async def delete_user_handler(callback: CallbackQuery):
+    tg_id = callback.from_user.id
+    
+    async with async_session_maker() as session:
+        async with session.begin():
+            success = await delete_user(session, tg_id)
+    
+    if success:
+        await callback.message.answer("Вы удалены из бота ✅")
+    else:
+        await callback.message.answer("Пользователь не найден ❌")
+    
+    await callback.answer()

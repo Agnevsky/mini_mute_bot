@@ -119,3 +119,12 @@ async def update_game_result(session, player1_name: str, player2_name: str, scor
             t1.games_lose += 1
 
     return True, None, None
+
+
+async def delete_user(session: AsyncSession, tg_id: int):
+    user = await get_user_by_tg_id(session, tg_id)
+    if not user:
+        return False
+    
+    await session.execute(delete(User).where(User.tg_id == tg_id))
+    return True
