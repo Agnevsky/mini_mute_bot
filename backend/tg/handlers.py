@@ -113,7 +113,7 @@ async def get_result_game(message: Message, state: FSMContext):
                 )
                 extra = " (от)" if is_extra_time else " (бул)" if is_shootout else ""
                 if success:
-                    success_list.append(...)
+                    success_list.append(f"{player1.title()} {score1} - {score2} {player2.title()}{extra}")
                     await add_game_result(session, player1.title(), score1, score2, player2, is_extra_time, is_shootout, team1, team2)
                 else:
                     missing = ", ".join(filter(None, [not_found1, not_found2]))
