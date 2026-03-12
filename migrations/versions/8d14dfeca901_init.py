@@ -1,8 +1,8 @@
-"""add shootout fields and matches table
+"""init
 
-Revision ID: 4dcfd2a7c39c
-Revises: b9d1c8c09bb4
-Create Date: 2026-03-12 16:18:22.900087
+Revision ID: 8d14dfeca901
+Revises: 
+Create Date: 2026-03-12 16:43:30.419633
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4dcfd2a7c39c'
-down_revision: Union[str, Sequence[str], None] = 'b9d1c8c09bb4'
+revision: str = '8d14dfeca901'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -35,8 +35,8 @@ def upgrade() -> None:
     op.alter_column('game_results', 'is_extra_time',
                existing_type=sa.BOOLEAN(),
                nullable=False)
-    op.add_column('tournaments', sa.Column('win_shootout', sa.Integer(), nullable=False))
-    op.add_column('tournaments', sa.Column('lose_shootout', sa.Integer(), nullable=False))
+    op.add_column('tournaments', sa.Column('win_shootout', sa.Integer(), server_default='0', nullable=False))
+    op.add_column('tournaments', sa.Column('lose_shootout', sa.Integer(), server_default='0', nullable=False))
     # ### end Alembic commands ###
 
 
