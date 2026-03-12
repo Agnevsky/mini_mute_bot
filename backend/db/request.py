@@ -69,10 +69,8 @@ async def get_tournament_table(session):
     return result.scalars().all()
 
 
-async def update_game_result(session, player1_name: str, player2_name: str, score1: int, score2: int, is_extra_time: bool):
-    """Обновляет статистику обоих игроков после матча"""
+async def update_game_result(session, player1_name: str, player2_name: str, score1: int, score2: int, is_extra_time: bool, is_shootout: bool = False):
 
-    # Ищем игроков по имени в турнирной таблице (players_name)
     r1 = await session.execute(select(Tournament).where(Tournament.players_name.ilike(player1_name)))
     r2 = await session.execute(select(Tournament).where(Tournament.players_name.ilike(player2_name)))
 
@@ -80,9 +78,8 @@ async def update_game_result(session, player1_name: str, player2_name: str, scor
     t2 = r2.scalar_one_or_none()
 
     if not t1 or not t2:
-        return None, player1_name if not t1 else None, player2_name if not t2 else None
+        return None, player1_name if not t1 else None, player2_name if not t2 else None, None, None
 
-    # Обновляем статистику
     t1.games += 1
     t2.games += 1
 
@@ -94,7 +91,23 @@ async def update_game_result(session, player1_name: str, player2_name: str, scor
     t2.missed_goals += score1
     t2.different_goals = t2.score_goals - t2.missed_goals
 
-    if is_extra_time:
+    if is_shootout:
+        if score1 > score2:
+            t1.games_win += 1
+            t1.win_shootout += 1
+            t1.score += 2
+            t2.games_lose += 1
+            t2.lose_shootout += 1
+            t2.score += 1
+        else:
+            t2.games_win += 1
+            t2.win_shootout += 1
+            t2.score += 2
+            t1.games_lose += 1
+            t1.lose_shootout += 1
+            t1.score += 1
+
+    elif is_extra_time:
         if score1 > score2:
             t1.games_win += 1
             t1.win_extra_time += 1
