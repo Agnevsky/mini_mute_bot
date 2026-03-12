@@ -71,7 +71,7 @@ async function loadData() {
       resultsData.forEach((r, i) => {
         const div = document.createElement('div');
         div.className = 'result-item';
-        const extra = r.extra_time ? '<span class="result-badge">ОТ</span>' : '<span class="result-badge-empty"></span>';
+        const extra = r.is_extra_time ? '<span class="result-badge">ОТ</span>' : r.is_shootout ? '<span class="result-badge">БУЛ</span>' : '<span class="result-badge-empty"></span>';
         div.innerHTML = `
             <span class="result-player">${r.player1} <span class="result-team">(${r.team1 || ''})</span></span>
             <span class="result-score">${r.score1} : ${r.score2}</span>

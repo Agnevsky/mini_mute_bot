@@ -52,10 +52,10 @@ async def results_json():
             "score1": r.score1,
             "score2": r.score2,
             "player2": r.player2,
-            "extra_time": r.is_extra_time,
+            "is_extra_time": r.is_extra_time,
+            "is_shootout": r.is_shootout,
             "team1": r.team1,
             "team2": r.team2,
-            
         } for r in results
     ])
 
