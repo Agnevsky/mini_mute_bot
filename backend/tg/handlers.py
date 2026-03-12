@@ -107,14 +107,14 @@ async def get_result_game(message: Message, state: FSMContext):
 
     async with async_session_maker() as session:
         async with session.begin():
-            for player1, player2, score1, score2, is_extra_time in results:
+            for player1, player2, score1, score2, is_extra_time, is_shootout in results:
                 success, not_found1, not_found2, team1, team2 = await update_game_result(
-                    session, player1, player2, score1, score2, is_extra_time
+                    session, player1, player2, score1, score2, is_extra_time, is_shootout
                 )
-                extra = " (от)" if is_extra_time else ""
+                extra = " (от)" if is_extra_time else " (бул)" if is_shootout else ""
                 if success:
-                    success_list.append(f"{player1.title()} {score1} - {score2} {player2.title()}{extra}")
-                    await add_game_result(session, player1, score1, score2, player2, is_extra_time, team1, team2)
+                    success_list.append(...)
+                    await add_game_result(session, player1.title(), score1, score2, player2, is_extra_time, is_shootout, team1, team2)
                 else:
                     missing = ", ".join(filter(None, [not_found1, not_found2]))
                     fail_list.append(f"Не найден: {missing}")
@@ -202,8 +202,9 @@ async def end_tournament(callback: CallbackQuery):
     # сортировка
     players = sorted(players, key=lambda p: (
         -p.score,
-        -(p.games_win - p.win_extra_time),
-        -p.games_win,
+        -(p.games_win - p.win_extra_time - p.win_shootout),  # победы в основное время
+        -(p.games_win - p.win_shootout),                      # победы в основное время + ОТ
+        -p.games_win,                                         # все победы
         -p.different_goals
     ))
 
@@ -259,7 +260,7 @@ async def apply_edit_result(message: Message, state: FSMContext):
     data = await state.get_data()
     edit_id = data.get("edit_id")
     
-    player1, player2, score1, score2, is_extra_time = results[0]
+    player1, player2, score1, score2, is_extra_time, is_shootout = results[0]
     
     async with async_session_maker() as session:
         async with session.begin():
@@ -267,10 +268,10 @@ async def apply_edit_result(message: Message, state: FSMContext):
             await rollback_game_result(session, edit_id)
             # применяем новую
             success, not_found1, not_found2, team1, team2 = await update_game_result(
-                session, player1, player2, score1, score2, is_extra_time
-            )
+                session, player1, player2, score1, score2, is_extra_time, is_shootout
+                )
             if success:
-                await update_game_record(session, edit_id, player1, player2, score1, score2, is_extra_time, team1, team2)
+                await update_game_record(session, edit_id, player1, player2, score1, score2, is_extra_time, is_shootout, team1, team2)
     
     if success:
         extra = " (ОТ)" if is_extra_time else ""

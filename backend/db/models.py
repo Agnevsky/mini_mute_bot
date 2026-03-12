@@ -36,6 +36,8 @@ class Tournament(Base):
     missed_goals: Mapped[int] = mapped_column(default=0)
     score_goals: Mapped[int] = mapped_column(default=0)
     different_goals: Mapped[int] = mapped_column(default=0)
+    win_shootout: Mapped[int] = mapped_column(default=0)
+    lose_shootout: Mapped[int] = mapped_column(default=0)
 
     player: Mapped["User"] = relationship(back_populates="tournaments")
 

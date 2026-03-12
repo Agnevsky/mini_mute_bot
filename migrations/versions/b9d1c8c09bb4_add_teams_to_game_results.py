@@ -19,11 +19,18 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade():
-    op.add_column('game_results', sa.Column('team1', sa.String(), nullable=True))
-    op.add_column('game_results', sa.Column('team2', sa.String(), nullable=True))
-    op.drop_column('game_results', 'created_at')
+    op.create_table('game_results',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('player1', sa.String(), nullable=False),
+        sa.Column('player2', sa.String(), nullable=False),
+        sa.Column('score1', sa.Integer(), nullable=False),
+        sa.Column('score2', sa.Integer(), nullable=False),
+        sa.Column('is_extra_time', sa.Boolean(), nullable=True),
+        sa.Column('team1', sa.String(), nullable=True),
+        sa.Column('team2', sa.String(), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
 
 def downgrade():
-    op.add_column('game_results', sa.Column('created_at', sa.DateTime(), nullable=True))
-    op.drop_column('game_results', 'team1')
-    op.drop_column('game_results', 'team2')
+    op.drop_table('game_results')
+    

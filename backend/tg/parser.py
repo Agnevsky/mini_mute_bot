@@ -9,6 +9,9 @@ def parse_results(text: str):
         if not line:
             continue
 
+        is_shootout = bool(re.search(r'\bбул\b', line, re.IGNORECASE))
+        line = re.sub(r'\bбул\b', '', line, flags=re.IGNORECASE).strip()
+
         is_extra_time = bool(re.search(r'\bот\b', line, re.IGNORECASE))
         line = re.sub(r'\bот\b', '', line, flags=re.IGNORECASE).strip()
 
@@ -24,6 +27,6 @@ def parse_results(text: str):
         score1 = int(match.group(3))
         score2 = int(match.group(4))
 
-        results.append((player1, player2, score1, score2, is_extra_time))
+        results.append((player1, player2, score1, score2, is_extra_time, is_shootout))
 
     return results, errors
