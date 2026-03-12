@@ -64,3 +64,4 @@ class GameResult(Base):
     is_extra_time: Mapped[bool] = mapped_column(default=False)
     team1: Mapped[str] = mapped_column(nullable=True)
     team2: Mapped[str] = mapped_column(nullable=True)
+    is_shootout: Mapped[bool] = mapped_column(default=False)

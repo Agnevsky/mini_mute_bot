@@ -135,11 +135,12 @@ async def update_game_result(session, player1_name: str, player2_name: str, scor
     return True, None, None, t1.players_command, t2.players_command
 
 
-async def add_game_result(session, player1, score1, score2, player2, is_extra_time, team1=None, team2=None):
+async def add_game_result(session, player1, score1, score2, player2, is_extra_time, is_shootout=False, team1=None, team2=None):
     result = GameResult(
         player1=player1, player2=player2,
         score1=score1, score2=score2,
         is_extra_time=is_extra_time,
+        is_shootout=is_shootout,
         team1=team1, team2=team2
     )
     session.add(result)
