@@ -135,6 +135,8 @@ async def get_result_game(message: Message, state: FSMContext):
 # ---функционал для мьюта пользователя---
 @router.message(F.reply_to_message)
 async def get_id_user_for_muted(message: Message, bot: Bot):
+    if not message.text:
+        return
     mute_command_list = message.text.split(' ')
     if message.text.split(' ')[0] == '!mute' and len(mute_command_list) >= 1:
         user_id = message.reply_to_message.from_user.id
