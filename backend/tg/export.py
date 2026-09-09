@@ -6,7 +6,8 @@ def create_tournament_excel(players):
     ws = wb.active
     ws.title = "Турнирная таблица"
 
-    headers = ["Место", "Игрок", "Команда", "Игры", "Победы", "Поражения", "Очки", "ЗГ", "ПГ", "Разница"]
+    headers = ["Место", "Игрок", "Команда", "Игры", "Победы", "Поражения",
+               "Победы ОТ", "Победы БУЛ", "Очки", "ЗГ", "ПГ", "Разница"]
     ws.append(headers)
 
     for i, p in enumerate(players, start=1):
@@ -17,6 +18,8 @@ def create_tournament_excel(players):
             p.games,
             p.games_win,
             p.games_lose,
+            p.win_extra_time,
+            p.win_shootout,
             p.score,
             p.score_goals,
             p.missed_goals,

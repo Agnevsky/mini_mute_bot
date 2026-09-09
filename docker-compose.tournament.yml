@@ -1,0 +1,50 @@
+# Дополнение к docker-compose.yml: база, миграции и сайт с таблицей.
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.tournament.yml up -d --build
+# или просто ./restart.sh tournament
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mute_bot}
+      POSTGRES_USER: ${DB_USER:-mute_bot}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mute_bot} -d ${DB_NAME:-mute_bot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  # Прогоняет миграции и завершается — бот и API стартуют только после него
+  migrate:
+    build: .
+    env_file: .env
+    command: alembic upgrade head
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  bot:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    build: .
+    env_file: .env
+    command: uvicorn backend.api.server:app --host 0.0.0.0 --port 8000
+    ports:
+      # За nginx безопаснее закрыть порт снаружи: "127.0.0.1:8000:8000"
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: always
+    volumes:
+      - ./web:/app/web
+
+volumes:
+  pgdata:

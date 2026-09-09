@@ -35,6 +35,10 @@ async def tournament_json():
             "games_win": row.games_win,
             "games_lose": row.games_lose,
             "score": row.score,
+            "win_extra_time": row.win_extra_time,
+            "lose_extra_time": row.lose_extra_time,
+            "win_shootout": row.win_shootout,
+            "lose_shootout": row.lose_shootout,
             "missed_goals": row.missed_goals,
             "score_goals": row.score_goals,
             "different_goals":row.different_goals,
@@ -75,7 +79,7 @@ async def head2head_json():
         if key not in h2h:
             h2h[key] = {p1: 0, p2: 0}
         
-        if r.is_extra_time:
+        if r.is_extra_time or r.is_shootout:
             if r.score1 > r.score2:
                 h2h[key][p1] = h2h[key].get(p1, 0) + 2
                 h2h[key][p2] = h2h[key].get(p2, 0) + 1

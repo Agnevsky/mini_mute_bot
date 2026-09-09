@@ -17,20 +17,25 @@ async function loadData() {
     // 1. Очки
     if (b.score !== a.score) return b.score - a.score;
 
-    // 2. Победы в основное время (без овертайма)
-    const a_reg_win = a.games_win - (a.win_extra_time || 0);
-    const b_reg_win = b.games_win - (b.win_extra_time || 0);
+    // 2. Победы в основное время (без овертайма и буллитов)
+    const a_reg_win = a.games_win - (a.win_extra_time || 0) - (a.win_shootout || 0);
+    const b_reg_win = b.games_win - (b.win_extra_time || 0) - (b.win_shootout || 0);
     if (b_reg_win !== a_reg_win) return b_reg_win - a_reg_win;
 
-    // 3. Общее число побед
+    // 3. Победы в основное время + овертайм
+    const a_ot_win = a.games_win - (a.win_shootout || 0);
+    const b_ot_win = b.games_win - (b.win_shootout || 0);
+    if (b_ot_win !== a_ot_win) return b_ot_win - a_ot_win;
+
+    // 4. Общее число побед
     if (b.games_win !== a.games_win) return b.games_win - a.games_win;
 
-    // 4. Очки в личных встречах
+    // 5. Очки в личных встречах
     const aH2H = getH2HPoints(h2hData, a.players_name, b.players_name);
     const bH2H = getH2HPoints(h2hData, b.players_name, a.players_name);
     if (bH2H !== aH2H) return bH2H - aH2H;
 
-    // 5. Разница шайб
+    // 6. Разница шайб
     return b.different_goals - a.different_goals;
   });
 
@@ -71,7 +76,9 @@ async function loadData() {
       resultsData.forEach((r, i) => {
         const div = document.createElement('div');
         div.className = 'result-item';
-        const extra = r.is_extra_time ? '<span class="result-badge">ОТ</span>' : r.is_shootout ? '<span class="result-badge">БУЛ</span>' : '';        div.innerHTML = `
+        const extra = r.is_extra_time ? '<span class="result-badge">ОТ</span>'
+                    : r.is_shootout ? '<span class="result-badge">БУЛ</span>' : '';
+        div.innerHTML = `
             <span class="result-player">${r.player1} <span class="result-team">(${r.team1 || ''})</span></span>
             <span class="result-score">${r.score1} : ${r.score2}</span>
             <span class="result-player right">${r.player2} <span class="result-team">(${r.team2 || ''})</span></span>

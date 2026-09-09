@@ -1,9 +1,4 @@
-import os, json
-from dotenv import load_dotenv
-
-from datetime import timedelta, datetime
-
-from aiogram import Router, types, Bot
+from aiogram import Router
 from aiogram import F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandStart, Command, CommandObject
@@ -20,9 +15,6 @@ from backend.tg.parser import parse_results
 
 
 router = Router()
-
-load_dotenv()
-admin_list = json.loads(os.getenv("ADMIN_ID"))
 
 
 # ---/start только в личке---
@@ -64,7 +56,7 @@ async def say_hello(message: Message, command: CommandObject, state: FSMContext)
         
         text = "Выбери номер игры для редактирования:\n\n"
         for i, r in enumerate(results, 1):
-            extra = " (ОТ)" if r.is_extra_time else ""
+            extra = " (ОТ)" if r.is_extra_time else " (БУЛ)" if r.is_shootout else ""
             text += f"{i}. {r.player1.title()} {r.score1}:{r.score2} {r.player2.title()}{extra}\n"
         
         await state.set_state(RegisterState.waiting_edit_choice)
@@ -114,7 +106,7 @@ async def get_result_game(message: Message, state: FSMContext):
                 extra = " (от)" if is_extra_time else " (бул)" if is_shootout else ""
                 if success:
                     success_list.append(f"{player1.title()} {score1} - {score2} {player2.title()}{extra}")
-                    await add_game_result(session, player1.title(), score1, score2, player2, is_extra_time, is_shootout, team1, team2)
+                    await add_game_result(session, player1.title(), score1, score2, player2.title(), is_extra_time, is_shootout, team1, team2)
                 else:
                     missing = ", ".join(filter(None, [not_found1, not_found2]))
                     fail_list.append(f"Не найден: {missing}")
@@ -129,32 +121,6 @@ async def get_result_game(message: Message, state: FSMContext):
 
     await message.answer(response)
     await state.clear()
-
-
-
-# ---функционал для мьюта пользователя---
-@router.message(F.reply_to_message)
-async def get_id_user_for_muted(message: Message, bot: Bot):
-    if not message.text:
-        return
-    mute_command_list = message.text.split(' ')
-    if message.text.split(' ')[0] == '!mute' and len(mute_command_list) >= 1:
-        user_id = message.reply_to_message.from_user.id
-        if admin_list[0] != str(user_id):
-            minutes = int(mute_command_list[1])
-            name = message.reply_to_message.from_user.full_name
-            until_date = datetime.now() + timedelta(minutes=minutes)
-
-            await bot.restrict_chat_member(
-                chat_id=message.chat.id,
-                user_id=user_id,
-                permissions=types.ChatPermissions(can_send_messages=False),
-                until_date=until_date
-            )
-
-            await message.answer(f"🔇 Пользователь {name} замучен на {minutes} минут")
-        else:
-            await message.answer(f"Ага соси приколист!")
 
 
 
@@ -189,7 +155,7 @@ async def get_team(message: Message, state: FSMContext):
                 session,
                 user_id=user.id,
                 p_command=team.upper(),
-                p_name=name.title()
+                p_name=(name or user.tg_name).title()
             )
 
     await state.clear()
@@ -273,10 +239,10 @@ async def apply_edit_result(message: Message, state: FSMContext):
                 session, player1, player2, score1, score2, is_extra_time, is_shootout
                 )
             if success:
-                await update_game_record(session, edit_id, player1, player2, score1, score2, is_extra_time, is_shootout, team1, team2)
+                await update_game_record(session, edit_id, player1.title(), player2.title(), score1, score2, is_extra_time, is_shootout, team1, team2)
     
     if success:
-        extra = " (ОТ)" if is_extra_time else ""
+        extra = " (ОТ)" if is_extra_time else " (БУЛ)" if is_shootout else ""
         await message.answer(f"Результат обновлён ✅\n{player1.title()} {score1}:{score2} {player2.title()}{extra}")
     else:
         await message.answer("Ошибка — игрок не найден ❌")

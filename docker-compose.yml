@@ -1,21 +1,7 @@
-version: '3.8'
-
+# Базовый режим: только бот для мьюта, никакой базы и сайта.
+# Турнир поднимается вместе с docker-compose.tournament.yml — см. README.
 services:
   bot:
     build: .
     env_file: .env
     restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-  api:
-    build: .
-    env_file: .env
-    command: uvicorn backend.api.server:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
-    restart: always
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./web:/app/web

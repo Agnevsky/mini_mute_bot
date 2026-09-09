@@ -185,7 +185,23 @@ async def rollback_game_result(session: AsyncSession, game_id: int):
     t2.different_goals = t2.score_goals - t2.missed_goals
 
     # откатываем победы/поражения/очки
-    if game.is_extra_time:
+    if game.is_shootout:
+        if game.score1 > game.score2:
+            t1.games_win -= 1
+            t1.win_shootout -= 1
+            t1.score -= 2
+            t2.games_lose -= 1
+            t2.lose_shootout -= 1
+            t2.score -= 1
+        else:
+            t2.games_win -= 1
+            t2.win_shootout -= 1
+            t2.score -= 2
+            t1.games_lose -= 1
+            t1.lose_shootout -= 1
+            t1.score -= 1
+
+    elif game.is_extra_time:
         if game.score1 > game.score2:
             t1.games_win -= 1
             t1.win_extra_time -= 1
@@ -211,7 +227,7 @@ async def rollback_game_result(session: AsyncSession, game_id: int):
             t1.games_lose -= 1
 
 
-async def update_game_record(session: AsyncSession, game_id: int, player1: str, player2: str, score1: int, score2: int, is_extra_time: bool, team1: str = None, team2: str = None):
+async def update_game_record(session: AsyncSession, game_id: int, player1: str, player2: str, score1: int, score2: int, is_extra_time: bool, is_shootout: bool = False, team1: str = None, team2: str = None):
     """Обновляет запись в game_results"""
     await session.execute(
         update(GameResult)
@@ -222,6 +238,7 @@ async def update_game_record(session: AsyncSession, game_id: int, player1: str, 
             score1=score1,
             score2=score2,
             is_extra_time=is_extra_time,
+            is_shootout=is_shootout,
             team1=team1,
             team2=team2
         )
