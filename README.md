@@ -36,9 +36,21 @@ Ubuntu/Debian, docker с плагином compose:
 
 ```bash
 sudo apt update
-sudo apt install -y docker.io docker-compose-plugin git
+sudo apt install -y docker.io docker-compose-v2 git
 sudo systemctl enable --now docker
 sudo usermod -aG docker $USER   # перелогиниться после этого
+docker compose version          # проверка
+```
+
+Пакет `docker-compose-plugin` в репозиториях Ubuntu **отсутствует** — он есть
+только в официальном репозитории Docker. В Ubuntu 24.04 нужный пакет называется
+`docker-compose-v2`.
+
+Если и его нет (старая Ubuntu, Debian), ставим из официального репозитория:
+
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo systemctl enable --now docker
 ```
 
 ## 2. Забрать код
