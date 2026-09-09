@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from datetime import timedelta
 
 from dotenv import load_dotenv
@@ -52,6 +53,13 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
         )
         return
 
+    if message.chat.type == "group":
+        await message.answer(
+            "Мьют работает только в супергруппах. "
+            "Обычную группу нужно сначала преобразовать в супергруппу"
+        )
+        return
+
     target = message.reply_to_message.from_user
     if target is None:
         await message.answer("Не понял, кого мьютить")
@@ -68,8 +76,11 @@ async def get_id_user_for_muted(message: Message, bot: Bot):
             permissions=types.ChatPermissions(can_send_messages=False),
             until_date=timedelta(minutes=minutes)
         )
-    except TelegramAPIError:
-        await message.answer("Не получилось замутить — проверь права бота в чате")
+    except TelegramAPIError as e:
+        logging.exception(
+            "Не удалось замьютить %s в чате %s", target.id, message.chat.id
+        )
+        await message.answer(f"Не получилось замутить: {e.message}")
         return
 
     await message.answer(f"🔇 Пользователь {target.full_name} замучен на {minutes} минут")
